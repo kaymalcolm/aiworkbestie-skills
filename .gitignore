@@ -1,0 +1,16 @@
+# Mac
+.DS_Store
+
+# Runtime cache files
+**/.reminders-cache.json
+
+# Machine-specific settings with hardcoded paths and secrets
+.claude/settings.local.json
+.claude/settings.json
+
+# Credentials
+**/*.env
+**/credentials*
+**/wallet/
+**/*.pem
+**/*.key
