@@ -170,11 +170,10 @@ else:
     cur.execute("""
         INSERT INTO post_scripts
             (asset_id, reel_script, reel_ending_instagram, reel_ending_tiktok,
-             reel_ending_linkedin, youtube_long)
-        VALUES (:1,:2,:3,:4,:5,:6)""",
+             reel_ending_linkedin)
+        VALUES (:1,:2,:3,:4,:5)""",
         (asset_id, reel_script,
-         reel_ending_instagram, reel_ending_tiktok, reel_ending_linkedin,
-         None))
+         reel_ending_instagram, reel_ending_tiktok, reel_ending_linkedin))
 
     # 5. INSERT post_slides — extract each carousel slide from ## CAROUSEL section in script file
     # Slides may be in table format (| Slide | Headline | Body |) or ### Slide N — LABEL / **Headline:** / **Body:** format

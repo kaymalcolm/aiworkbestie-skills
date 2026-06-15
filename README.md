@@ -30,7 +30,6 @@ Run these in order for each post:
 | [ai-for-you-register](ai-for-you-register/) | `/ai-for-you-register [NNN]` | Register a completed draft in the asset DB (called automatically by `/ai-for-you`) |
 | [ai-for-you-grader](ai-for-you-grader/) | `/ai-for-you-grader [NNN or path]` | Grade any artifact against brand standards; auto-fix anything below A+ |
 | [ai-for-you-sync](ai-for-you-sync/) | `/ai-for-you-sync [post_number]` | Pull current DB state for a post and overwrite local `.md` files (EDITED/APPROVED assets only) |
-| [ai-for-you-gemini](ai-for-you-gemini/) | `/ai-for-you-gemini [NNN]` | Generate Gemini green screen overlay prompts for talking-head reels |
 | [ai-for-you-manychat](ai-for-you-manychat/) | `/ai-for-you-manychat [NNN]` | Generate ManyChat automation config for a post's comment keyword |
 
 ---
@@ -68,7 +67,6 @@ Run these in order for each post:
 ├── ai-for-you-substack/     # Publish newsletter to Substack
 ├── ai-for-you-grader/       # Brand quality grader + auto-fix
 ├── ai-for-you-sync/         # Pull DB state → overwrite local files
-├── ai-for-you-gemini/       # Gemini green screen prompts
 ├── ai-for-you-manychat/     # ManyChat automation config
 ├── buffer/                  # Buffer scheduling
 ├── notebooklm/

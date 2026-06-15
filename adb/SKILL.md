@@ -144,7 +144,7 @@ Publishing targets — one row per asset × platform.
 |--------|------|-------|
 | id | NUMBER (IDENTITY) | PK |
 | asset_id | NUMBER | FK → assets(id) |
-| platform | VARCHAR2(100) | instagram, tiktok, youtube-short, youtube-long, twitter, threads, substack-newsletter, substack-note, instagram-stories, linkedin-document, linkedin-newsletter |
+| platform | VARCHAR2(100) | instagram, tiktok, youtube-short, twitter, threads, substack-newsletter, substack-note, instagram-stories, linkedin-document, linkedin-newsletter |
 | status | VARCHAR2(50) | pending, ready, posted, skipped |
 | planned_post_date | VARCHAR2(50) | nullable |
 | posted_date | VARCHAR2(50) | nullable |
@@ -163,8 +163,6 @@ All script and brief content for a draft asset.
 | reel_script | CLOB | talking-head reel script |
 | companion_script | CLOB | companion/B-roll script |
 | brief | CLOB | full content brief |
-| gemini_prompts | CLOB | green-screen Gemini image prompts |
-| youtube_long | CLOB | long-form YouTube script |
 | youtube_short | CLOB | YouTube Shorts script |
 | reel_ending_instagram | VARCHAR2(1000) | Instagram-specific CTA ending |
 | reel_ending_tiktok | VARCHAR2(1000) | TikTok-specific CTA ending |

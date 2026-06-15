@@ -54,7 +54,6 @@ Each bucket maps one or more `item_type` values to a single local file. A bucket
 | `twitter` | `-twitter-` in filename | twitter | post_captions platform='twitter' |
 | `youtube-short` | `-youtube-short-` in filename | youtube_short | post_captions platform='youtube-short' |
 | `brief` | `-brief-` in filename | brief | post_scripts.brief |
-| `gemini` | `-gemini-` in filename | gemini | post_scripts.gemini_prompts |
 | `manychat` | `-manychat-` in filename | manychat | post_keywords |
 
 ---
@@ -113,7 +112,6 @@ BUCKETS = {
     'twitter':       {'item_types': {'twitter'}},
     'youtube-short': {'item_types': {'youtube_short'}},
     'brief':         {'item_types': {'brief'}},
-    'gemini':        {'item_types': {'gemini'}},
     'manychat':      {'item_types': {'manychat'}},
 }
 
@@ -148,16 +146,14 @@ asset_id = asset["id"]
 
 # Scripts
 cur.execute("""
-    SELECT reel_script, companion_script, brief, gemini_prompts,
-           youtube_long, youtube_short,
+    SELECT reel_script, companion_script, brief, youtube_short,
            reel_ending_instagram, reel_ending_tiktok, reel_ending_linkedin
     FROM post_scripts WHERE asset_id = :1
 """, [asset_id])
 sr = cur.fetchone()
 scripts = {}
 if sr:
-    fields = ['reel_script','companion_script','brief','gemini_prompts',
-              'youtube_long','youtube_short',
+    fields = ['reel_script','companion_script','brief','youtube_short',
               'reel_ending_instagram','reel_ending_tiktok','reel_ending_linkedin']
     scripts = {f: (sr[i] or '') for i, f in enumerate(fields)}
 
@@ -207,7 +203,6 @@ For each bucket in `to_sync`, find the local file by scanning the post folder fo
 - `twitter`: filename contains `-twitter-`
 - `youtube-short`: filename contains `-youtube-short-`
 - `brief`: filename contains `-brief-`
-- `gemini`: filename contains `-gemini-`
 - `manychat`: filename contains `-manychat-`
 
 Use the first match. If no match, construct a new path:
@@ -405,21 +400,6 @@ Omit HASHTAGS section if empty.
 ## BRIEF
 
 {scripts.brief}
-```
-
-**`gemini` bucket:**
-```
-# AI For You — {short_name} — Gemini Prompts
-
-**Post:** {post_number}
-**Asset ID:** {asset_id}
-**Synced:** {today}
-
----
-
-## GEMINI PROMPTS
-
-{scripts.gemini_prompts}
 ```
 
 **`manychat` bucket:**

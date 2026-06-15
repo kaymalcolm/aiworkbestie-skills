@@ -228,7 +228,7 @@ Platform name mapping (Buffer service → destinations.platform):
 | `linkedin` | `linkedin-newsletter` |
 | `twitter` | `twitter` |
 | `threads` | `threads` |
-| `youtube` | `youtube-short` and `youtube-long` |
+| `youtube` | `youtube-short` |
 
 Note: Instagram and TikTok share one `instagram-tiktok` destinations row — scheduling either marks it scheduled.
 
@@ -239,7 +239,7 @@ from oracle_db import get_connection
 
 # Build the list of destinations.platform values that were successfully scheduled
 # Map from Buffer service names to destinations.platform names (see table above)
-scheduled_platforms = []  # e.g. ["instagram-tiktok", "twitter", "threads", "youtube-short", "youtube-long"]
+scheduled_platforms = []  # e.g. ["instagram-tiktok", "twitter", "threads", "youtube-short"]
 
 con = get_connection()
 cur = con.cursor()

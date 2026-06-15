@@ -201,7 +201,6 @@ Based on the topic and the 1-in-3 full content rule:
 - IG / TikTok / YouTube Short: same B-roll video, platform-adjusted captions
 - LinkedIn: carousel / document only — no video
 - Threads: caption only — no video, no ManyChat CTA
-- YouTube Long: dropped — do not generate
 
 Document the format decision (FORMAT 1 or FORMAT 2, FULL CONTENT or TEASE) at the top of the output file.
 
@@ -408,8 +407,6 @@ TikTok's algorithm rewards watch time (rewatches, completion rate) and comments.
 #### 3d. YOUTUBE SHORT
 
 **B-roll video:** Same video as Instagram and TikTok. Do NOT rewrite the B-roll direction inline — reference the Instagram/TikTok file path. The YouTube Short file is a description-only asset in the DB.
-
-YouTube Long-Form is a dropped format — do not generate it.
 
 **YouTube Shorts Title (for search — not just scroll-stopping):**
 
