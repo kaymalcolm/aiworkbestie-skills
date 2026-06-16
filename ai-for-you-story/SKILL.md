@@ -89,7 +89,7 @@ import json, subprocess
 from pathlib import Path
 
 stories_dir = Path("/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/stories")
-stories_dir.mkdir(exist_ok=True)
+stories_dir.mkdir(parents=True, exist_ok=True)
 notebooks_file = stories_dir / ".notebooks.json"
 
 if notebooks_file.exists():
@@ -107,6 +107,7 @@ else:
     import json as _json
     notebook_id = _json.loads(result.stdout)["notebook"]["id"]
     notebooks_file.write_text(json.dumps({"stories": notebook_id}, indent=2))
+    print(f"Notebook ID saved: {notebook_id}")
     print(f"Created stories notebook: {notebook_id}")
 ```
 
@@ -166,7 +167,9 @@ DESIGN RULES:
   semi-transparent dark warm overlay so it reads clearly against the scene
 - Poll widget below question: two rounded pill options side by side, white fill with dark text
 - NO link sticker on this one  -  the poll IS the CTA.
-- Cinematic, personal energy. Feels like a question from someone who actually knows you.
+- ZERO additional text elements. No bullets, no lists, no explanatory copy, no callouts. The question is the ONLY text on this frame beyond the badge, handle, and poll widget.
+- Max 7 words per line. Max 2 lines total. Fragment or punchy phrase only.
+- Cinematic, personal energy. Feels like a question from someone who knows you.
 - The scene sets a mood; the question is the message.
 
 CONTENT:
@@ -206,6 +209,8 @@ DESIGN RULES:
   Use a subtle semi-transparent dark warm panel behind the stat if needed for contrast.
 - One supporting line below in smaller weight, white or soft gold
 - Link sticker at bottom: soft rounded pill, gold/amber fill
+- ZERO additional text elements. No bullets, no lists, no explanatory copy, no callouts. The stat is the ONLY text on this frame beyond the badge, handle, supporting line, and link sticker.
+- Max 7 words per line. Max 2 lines total. Fragment or punchy phrase only.
 - Minimal. The stat IS the message. The scene is the mood.
 
 CONTENT:
@@ -229,8 +234,8 @@ Link sticker: "I wrote you a starting point →"
 
 **Base prompt:**
 ```
-Create an Instagram Story frame for the AI For You series. Tappable list energy — like someone
-is about to tell you something good, set against a gorgeous cinematic scene.
+Create an Instagram Story frame for the AI For You series. Tappable teaser energy — one hook line
+that makes them want to tap through, set against a gorgeous cinematic scene.
 
 FORMAT: Portrait 9:16, 1080x1920px.
 
@@ -257,8 +262,8 @@ Link sticker: "Read it here"
 ```
 - FEATURE KAY: The African American woman with collarbone length, full, voluminous spiral curls (collarbone length, big natural hair energy) no glasses is visible in the lower portion of the frame, seated at her desk, leaning
   slightly forward — warm and conspiratorial, like she's about to let you in on something. The
-  lead line and list occupy the upper two-thirds of the frame above and around her. Her presence
-  gives the list a personal, insider feel — these aren't just tips, they're what she actually uses.
+  lead line occupies the upper two-thirds of the frame above her. Her presence gives the teaser
+  a personal, insider feel — this isn't just a tip, it's what she uses.
 ```
 
 ---
@@ -435,6 +440,33 @@ con.close()
 ```
 
 Then refresh: `/opt/homebrew/bin/python3.12 /Users/kmalcolm/claude/iamkaymalcolm/assets/manage-assets.py export-md`
+
+---
+
+### REGEN PATH — Use when specific story IDs already exist
+
+**Trigger:** User says "regen" or names specific story file IDs or story numbers to redo.
+
+1. **Skip DB INSERT entirely.** Use the existing asset IDs — look them up with:
+   ```
+   SELECT id, short_name, file_path FROM assets
+   WHERE post_id = [POST_ID] AND type = 'story'
+   ORDER BY id
+   ```
+2. **Canonical filenames are the same as the original** — downloading to the same path overwrites the file in place.
+3. **After download and badge crop**, run MERGE into `assets_images` instead of INSERT:
+   ```sql
+   MERGE INTO assets_images ai
+   USING dual ON (ai.asset_id = [ASSET_ID])
+   WHEN MATCHED THEN UPDATE SET gdrive_path = :1, gdrive_folder_id = :2, uploaded_at = CURRENT_TIMESTAMP
+   WHEN NOT MATCHED THEN INSERT (asset_id, gdrive_path, gdrive_folder_id, uploaded_at)
+     VALUES ([ASSET_ID], :1, :2, CURRENT_TIMESTAMP)
+   ```
+4. **Update `updated_date`** on the assets row:
+   ```sql
+   UPDATE assets SET updated_date = DATE '[TODAY]' WHERE id = [ASSET_ID]
+   ```
+5. **Brief checklist:** find `REGENERATE` items for these stories in the brief and mark them `DONE — regen [date]`.
 
 ---
 

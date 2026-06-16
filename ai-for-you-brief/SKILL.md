@@ -23,7 +23,7 @@ Run the full workflow with no confirmation. Auto-detect the target file if no ar
 
 ### STEP 0  -  Identify the target draft
 
-- If a post number or file path is given, find the post folder: `/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_NUMBER]-*/` and locate the draft file inside it (matching `[POST_NUMBER]-*-draft-*.md`). Note the full post folder path as `POST_FOLDER` (e.g. `1031-where-to-start-with-ai`).
+- If a post number or file path is given, find the post folder: `/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_NUMBER]-*/` and locate the draft file inside it by matching `[POST_NUMBER]-*-instagram-*.md` first. If that doesn't exist, fall back to any `[POST_NUMBER]-*.md` that is not a brief, script, or platform-specific file (twitter, threads, tiktok, youtube). Note the full post folder path as `POST_FOLDER` (e.g. `1031-where-to-start-with-ai`).
 - If no argument, find the most recently modified draft across all post folders.
 - Read the full draft file.
 - Also read `/Users/kmalcolm/claude/iamkaymalcolm/strategy/general-strategy.md` for the b-roll shot bank and platform rules.
@@ -202,49 +202,31 @@ Body: [exact text]
 
 Derive `SHORT_NAME` from the post folder slug (e.g. folder `1031-where-to-start-with-ai` → `where-to-start-with-ai`). Use today's date as `DATE` (YYYY-MM-DD format).
 
-**3a — Insert the asset row first to get the auto-incremented ID:**
+**3a — Connect and insert via MCP SQLcl:**
 
-```python
-import oracledb, datetime, sys
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
-from oracle_db import get_connection
-today = datetime.date.today().isoformat()
-short_name  = "[SHORT_NAME]"   # derived from post folder slug
-post_number = "[POST_NUMBER]"
+```
+1. Call mcp__sqlcl__connect with connection_name: "26ai"
 
-con = get_connection()
-cur = con.cursor()
+2. Call mcp__sqlcl__sql_run:
+   SELECT id FROM posts WHERE post_number = '[POST_NUMBER]'
+   → capture result as POST_ID
 
-cur.execute("SELECT id FROM posts WHERE post_number = :1", (post_number,))
-post_row = cur.fetchone()
-post_id = post_row[0] if post_row else None
+3. Call mcp__sqlcl__sql_run:
+   INSERT INTO assets (type, pipeline, short_name, description, status,
+                       created_date, updated_date, post_id, file_path)
+   VALUES ('brief', 'ai-for-you', '[SHORT_NAME]-brief',
+           'Production brief for post [POST_NUMBER]', 'draft',
+           DATE '[TODAY]', DATE '[TODAY]', [POST_ID],
+           '/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/[POST_NUMBER]-[SHORT_NAME]-brief-[TODAY].md')
 
-# INSERT brief asset — capture generated ID via RETURNING
-new_id_var = cur.var(oracledb.NUMBER)
-cur.execute("""
-    INSERT INTO assets (type, pipeline, short_name, description, status,
-                        created_date, updated_date, post_id)
-    VALUES ('brief','ai-for-you',:1,:2,'draft',:3,:4,:5)
-    RETURNING id INTO :6""",
-    (short_name + "-brief",
-     f"Production brief for post {post_number}",
-     today, today, post_id, new_id_var))
-brief_id = int(new_id_var.getvalue()[0])
-
-# Link to the parent draft asset
-cur.execute("SELECT a.id FROM assets a WHERE a.type='draft' AND a.post_id=:1", (post_id,))
-draft_row = cur.fetchone()
-if draft_row:
-    cur.execute(
-        "INSERT INTO asset_links (from_id, to_id, relationship) VALUES (:1,:2,'brief-for')",
-        (draft_row[0], brief_id))
-
-con.commit()
-con.close()
-print(f"BRIEF_ID={brief_id}")
+4. Call mcp__sqlcl__sql_run:
+   SELECT id FROM assets
+   WHERE short_name = '[SHORT_NAME]-brief' AND post_id = [POST_ID]
+   ORDER BY id DESC FETCH FIRST 1 ROW ONLY
+   → capture result as BRIEF_ID
 ```
 
-Note the ID as `BRIEF_ID`. Build the canonical filename:
+Build the canonical filename:
 `[POST_NUMBER]-[SHORT_NAME]-brief-[DATE].md`
 
 **3b — Save the brief to:**
@@ -252,32 +234,9 @@ Note the ID as `BRIEF_ID`. Build the canonical filename:
 
 ---
 
-### STEP 4  -  Update tracking files
+### STEP 4  -  (No additional tracking steps needed)
 
-**4a — Update file_path in the DB now that the file is saved:**
-
-```python
-import sys, datetime
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
-from oracle_db import get_connection
-today = datetime.date.today().isoformat()
-file_path = "/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/[POST_NUMBER]-[SHORT_NAME]-brief-[DATE].md"
-
-con = get_connection()
-cur = con.cursor()
-cur.execute(
-    "UPDATE assets SET file_path=:1, updated_date=:2 WHERE id=:3",
-    (file_path, today, brief_id))
-con.commit()
-con.close()
-```
-
-**4b — Refresh the registry:**
-```
-/opt/homebrew/bin/python3.12 /Users/kmalcolm/claude/iamkaymalcolm/assets/manage-assets.py export-md
-```
-
-No separate queue update is needed — the queue view auto-detects brief presence via JOIN on `post_id`.
+`file_path` was included in the INSERT in Step 3a. The queue view auto-detects brief presence via JOIN on `post_id` — no registry refresh needed.
 
 ---
 
@@ -285,16 +244,9 @@ No separate queue update is needed — the queue view auto-detects brief presenc
 
 Upload the saved brief to the iamkaymalcolm posts folder alongside the other post assets:
 
-```python
-/opt/homebrew/bin/python3.12 - << 'PYEOF'
-import subprocess
-brief_path = "/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/[POST_NUMBER]-[SHORT_NAME]-brief-[DATE].md"
-post_folder = "[POST_FOLDER]"
-subprocess.run(["rclone", "copy", brief_path,
-                f"gdrive:AI LinkedIn 2026/{post_folder}",
-                "--drive-root-folder-id", "1IMsrLBybekEcIkg2-BVw9_9udnDtQM48"], check=True)
-print(f"Brief uploaded to Drive: AI LinkedIn 2026/{post_folder}/[POST_NUMBER]-[SHORT_NAME]-brief-[DATE].md")
-PYEOF
+```bash
+rclone copy "[BRIEF_FILE_PATH]" "gdrive:AI LinkedIn 2026/[POST_FOLDER]" \
+  --drive-root-folder-id "1IMsrLBybekEcIkg2-BVw9_9udnDtQM48"
 ```
 
 ---
@@ -314,8 +266,9 @@ One short paragraph. That's it. They can read the brief.
 
 1. **No em dashes anywhere in the brief.** If any em dash appears in verbatim content pulled from the draft, replace it with a hyphen ( - ) before writing it into the brief. Zero exceptions.
 2. **Every caption is verbatim from the draft.** Do not rewrite, shorten, or improve. The draft is approved content. The brief is execution, not editing.
-3. **B-roll directions are specific.** Reference the shot bank from `general-strategy.md`. Name the shot type, the mood, what's in frame. Don't say "lifestyle footage"  -  say "Kay walking away from desk, coffee in hand, bag over shoulder  -  living her life, not looking at a screen."
+3. **B-roll directions are specific.** Reference the shot bank from `general-strategy.md`. Name the shot type, the mood, what's in frame. Don't say "lifestyle footage"  -  say "Kay walking away from desk, coffee in hand, bag over shoulder  -  living her life, not looking at a screen." For FORMAT 1 posts with more than 3 shots, default to an alternating Lifestyle / Screen Capture pattern. Never run more than 2 screen captures back-to-back. If the draft's shot list violates this, rewrite it before including it in the brief. Document the final pattern in the sourcing notes line (e.g., "Pattern: Lifestyle / SC / Lifestyle / SC / Lifestyle / Lifestyle").
 4. **Canva specs are always included for carousel posts (FORMAT 1).** Exact dimensions, font guidance, color values. No guessing.
 5. **ManyChat setup is flagged every time** there's a comment keyword CTA  -  it must be live before the post goes up, not after.
 6. **The pinned comment timing is non-negotiable.** If the post uses an incomplete list close, the pinned comment must go up within 5 minutes of the post going live. Flag this explicitly.
 7. **No strategy context in the brief.** The social media manager does not need to know why decisions were made. She needs to know what to do. Keep strategy out of this document entirely.
+8. **The B-roll checklist item must be specific.** Do not write "B-roll clips sourced from library (or new shots captured)." Write out which shot numbers are library pulls and which require new recording, derived directly from the shot list. Example: "B-roll: shots 1, 3, 5, 6 from library; shot 2 = screen capture of long conversation scroll; shot 4 = screen capture of PDF-to-markdown conversion."
