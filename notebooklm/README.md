@@ -2,7 +2,7 @@
 
 Full programmatic access to Google NotebookLM via the `notebooklm-py` library. Includes capabilities not available in the NotebookLM web UI — programmatic sharing, artifact export to multiple formats, parallel source ingestion, and parallel agent workflows.
 
-This skill is also used internally by `ai-for-you-infographic` and `ai-for-you-story`.
+This skill is also used internally by `content-kit-infographic` and `content-kit-story`.
 
 ---
 

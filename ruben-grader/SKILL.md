@@ -157,6 +157,6 @@ SUGGESTIONS
 - Grades Instagram, TikTok, Threads, or YouTube content against this framework
 - Fixes content — it reports only
 - Changes factual claims or post structure in suggestions
-- Applies Kay's voice standards — that is the `ai-for-you-grader` and `kay-voice-grader` jobs
+- Applies Kay's voice standards — that is the `content-kit-grader` and `kay-voice-grader` jobs
 - Conflates LinkedIn performance with other platform performance
 - Gives an A when any applicable pillar is WEAK or FAIL

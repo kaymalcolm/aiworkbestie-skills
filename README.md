@@ -10,16 +10,16 @@ Run these in order for each post:
 
 | Step | Skill | Command | Output |
 |------|-------|---------|--------|
-| 1a | [ai-for-you-research](ai-for-you-research/) | `/ai-for-you-research "[topic]"` | Research file + reel script (stop and review before committing) |
-| 1b | [ai-for-you](ai-for-you/) | `/ai-for-you [research-file-path]` | Full multi-platform draft `.md` files + DB registration |
-| 2 | [ai-for-you-brief](ai-for-you-brief/) | `/ai-for-you-brief [NNN]` | 1-page SMM production brief |
-| 3 | [ai-for-you-infographic](ai-for-you-infographic/) | `/ai-for-you-infographic [NNN]` | Cover + mid + download infographic `.png` files |
-| 4 | [ai-for-you-story](ai-for-you-story/) | `/ai-for-you-story [NNN]` | 3 Instagram Story `.png` files |
-| 5 | [ai-for-you-linkedin-doc](ai-for-you-linkedin-doc/) | `/ai-for-you-linkedin-doc [NNN]` | LinkedIn document slides + PDF |
-| 6 | [ai-for-you-substack](ai-for-you-substack/) | `/ai-for-you-substack [NNN]` | Substack draft with images |
+| 1a | [content-kit-research](content-kit-research/) | `/content-kit-research "[topic]"` | Research file + reel script (stop and review before committing) |
+| 1b | [content-kit](content-kit/) | `/content-kit [research-file-path]` | Full multi-platform draft `.md` files + DB registration |
+| 2 | [content-kit-brief](content-kit-brief/) | `/content-kit-brief [NNN]` | 1-page SMM production brief |
+| 3 | [content-kit-infographic](content-kit-infographic/) | `/content-kit-infographic [NNN]` | Cover + mid + download infographic `.png` files |
+| 4 | [content-kit-story](content-kit-story/) | `/content-kit-story [NNN]` | 3 Instagram Story `.png` files |
+| 5 | [content-kit-linkedin-doc](content-kit-linkedin-doc/) | `/content-kit-linkedin-doc [NNN]` | LinkedIn document slides + PDF |
+| 6 | [content-kit-substack](content-kit-substack/) | `/content-kit-substack [NNN]` | Substack draft with images |
 | 7 | [buffer](buffer/) | `/buffer [NNN]` | Social captions queued to Buffer |
 
-**Step 1 shortcut:** Skip research mode and go straight to a full draft: `/ai-for-you "[topic]"` — runs research inline without stopping.
+**Step 1 shortcut:** Skip research mode and go straight to a full draft: `/content-kit "[topic]"` — runs research inline without stopping.
 
 ---
 
@@ -27,10 +27,10 @@ Run these in order for each post:
 
 | Skill | Command | Purpose |
 |-------|---------|---------|
-| [ai-for-you-register](ai-for-you-register/) | `/ai-for-you-register [NNN]` | Register a completed draft in the asset DB (called automatically by `/ai-for-you`) |
-| [ai-for-you-grader](ai-for-you-grader/) | `/ai-for-you-grader [NNN or path]` | Grade any artifact against brand standards; auto-fix anything below A+ |
-| [ai-for-you-sync](ai-for-you-sync/) | `/ai-for-you-sync [post_number]` | Pull current DB state for a post and overwrite local `.md` files (EDITED/APPROVED assets only) |
-| [ai-for-you-manychat](ai-for-you-manychat/) | `/ai-for-you-manychat [NNN]` | Generate ManyChat automation config for a post's comment keyword |
+| [content-kit-register](content-kit-register/) | `/content-kit-register [NNN]` | Register a completed draft in the asset DB (called automatically by `/content-kit`) |
+| [content-kit-grader](content-kit-grader/) | `/content-kit-grader [NNN or path]` | Grade any artifact against brand standards; auto-fix anything below A+ |
+| [content-kit-sync](content-kit-sync/) | `/content-kit-sync [post_number]` | Pull current DB state for a post and overwrite local `.md` files (EDITED/APPROVED assets only) |
+| [content-kit-manychat](content-kit-manychat/) | `/content-kit-manychat [NNN]` | Generate ManyChat automation config for a post's comment keyword |
 
 ---
 
@@ -57,17 +57,17 @@ Run these in order for each post:
 
 ```
 ~/.claude/skills/
-├── ai-for-you/              # Full content package generator
-├── ai-for-you-research/     # Research-only: audience research + reel script → research file
-├── ai-for-you-register/     # DB registration for a completed draft
-├── ai-for-you-brief/        # SMM production brief
-├── ai-for-you-infographic/  # 3 infographics (cover, mid, download)
-├── ai-for-you-story/        # Instagram Stories
-├── ai-for-you-linkedin-doc/ # LinkedIn carousel doc + PDF
-├── ai-for-you-substack/     # Publish newsletter to Substack
-├── ai-for-you-grader/       # Brand quality grader + auto-fix
-├── ai-for-you-sync/         # Pull DB state → overwrite local files
-├── ai-for-you-manychat/     # ManyChat automation config
+├── content-kit/              # Full content package generator
+├── content-kit-research/     # Research-only: audience research + reel script → research file
+├── content-kit-register/     # DB registration for a completed draft
+├── content-kit-brief/        # SMM production brief
+├── content-kit-infographic/  # 3 infographics (cover, mid, download)
+├── content-kit-story/        # Instagram Stories
+├── content-kit-linkedin-doc/ # LinkedIn carousel doc + PDF
+├── content-kit-substack/     # Publish newsletter to Substack
+├── content-kit-grader/       # Brand quality grader + auto-fix
+├── content-kit-sync/         # Pull DB state → overwrite local files
+├── content-kit-manychat/     # ManyChat automation config
 ├── buffer/                  # Buffer scheduling
 ├── notebooklm/
 ├── notebooklm-ppt/
@@ -88,5 +88,5 @@ Run these in order for each post:
 | `rclone` | gdrive-upload, story | `brew install rclone` |
 | `pptxgenjs` | notebooklm-ppt | `npm install -g pptxgenjs` |
 | Buffer MCP | buffer | see buffer skill README |
-| Substack MCP | ai-for-you-substack | see substack skill README |
-| Oracle ADB + `oracle_db.py` | register, sync, ai-for-you | wallet at `~/oracle/wallet` |
+| Substack MCP | content-kit-substack | see substack skill README |
+| Oracle ADB + `oracle_db.py` | register, sync, content-kit | wallet at `~/oracle/wallet` |

@@ -96,7 +96,7 @@ Core content asset registry — one row per content item.
 |--------|------|-------|
 | id | NUMBER (IDENTITY) | PK |
 | type | VARCHAR2(100) | draft, brief, infographic-mid, infographic-download, story, raw-infographic, processed-infographic, raw-script, transcript, raw-video |
-| pipeline | VARCHAR2(100) | ai-for-you, raw-content |
+| pipeline | VARCHAR2(100) | content-kit, raw-content |
 | short_name | VARCHAR2(255) | URL-slug identifier |
 | description | VARCHAR2(4000) | nullable |
 | status | VARCHAR2(50) | needs-naming, pending, processing, ready, posted, archived |
@@ -366,7 +366,7 @@ with env `TNS_ADMIN=/Users/kmalcolm/oracle/wallet` already set in mcp.json.
 ```sql
 -- via mcp__sqlcl__execute
 SELECT id, type, short_name, status FROM assets
-WHERE pipeline = 'ai-for-you'
+WHERE pipeline = 'content-kit'
 ORDER BY id DESC
 FETCH FIRST 20 ROWS ONLY
 ```

@@ -246,7 +246,7 @@ cur = con.cursor()
 
 # Find the draft asset for this post
 cur.execute(
-    "SELECT id FROM assets WHERE type='draft' AND pipeline='ai-for-you' AND post_number=:1",
+    "SELECT id FROM assets WHERE type='draft' AND pipeline='content-kit' AND post_number=:1",
     (POST_NUMBER,))
 row = cur.fetchone()
 if row:

@@ -73,13 +73,13 @@ Before starting workflows, verify the CLI is ready:
 
 When a post number is referenced in a request (e.g., "post 1039", "#1039", "for 1039"), apply this find-or-create logic **before** doing anything else:
 
-1. Run `notebooklm list --json` and scan the `notebooks` array for a title matching `ai-for-you-<number>` exactly
+1. Run `notebooklm list --json` and scan the `notebooks` array for a title matching `content-kit-<number>` exactly
 2. **If found:** run `notebooklm use <existing_id>` — do NOT create a new notebook
-3. **If not found:** run `notebooklm create "ai-for-you-<number>"` to create it, then proceed
+3. **If not found:** run `notebooklm create "content-kit-<number>"` to create it, then proceed
 
 All sources, chat, and artifact generation for that post number go into that single notebook. Never create a second notebook for the same post number.
 
-**Naming convention:** `ai-for-you-1039`, `ai-for-you-1031`, `ai-for-you-1041`, etc.
+**Naming convention:** `content-kit-1039`, `content-kit-1031`, `content-kit-1041`, etc.
 
 ---
 
@@ -284,13 +284,13 @@ When working on a specific post (e.g., "add this to post 1039"):
 ```bash
 # 1. Check if notebook exists
 notebooklm list --json
-# → scan titles for "ai-for-you-1039"
+# → scan titles for "content-kit-1039"
 
 # 2a. Found — use it
 notebooklm use <existing_id>
 
 # 2b. Not found — create it
-notebooklm create "ai-for-you-1039"
+notebooklm create "content-kit-1039"
 
 # 3. Continue with sources, chat, generation as normal
 ```
