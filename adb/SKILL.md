@@ -66,14 +66,14 @@ Wallet   : /Users/kmalcolm/oracle/wallet
 Visual schema reference (PDF + PNG) — update whenever DDL changes:
 
 ```
-ERD PDF   : /Users/kmalcolm/claude/iamkaymalcolm/apps/db-erd.pdf
-ERD PNG   : /Users/kmalcolm/claude/iamkaymalcolm/apps/db-erd.png
-Generator : /Users/kmalcolm/claude/iamkaymalcolm/apps/generate_erd.py
+ERD PDF   : {BASE_DIR}/apps/db-erd.pdf
+ERD PNG   : {BASE_DIR}/apps/db-erd.png
+Generator : {BASE_DIR}/apps/generate_erd.py
 ```
 
 **Rule:** After any DDL change (CREATE/ALTER/DROP TABLE or column), run:
 ```bash
-PATH="/opt/homebrew/bin:$PATH" python3.12 /Users/kmalcolm/claude/iamkaymalcolm/apps/generate_erd.py
+PATH="/opt/homebrew/bin:$PATH" python3.12 {BASE_DIR}/apps/generate_erd.py
 ```
 And update the TABLES dict in `generate_erd.py` to match the new schema.
 
@@ -431,6 +431,23 @@ FROM comment_keywords ck
 LEFT JOIN posts p ON p.id = ck.post_id
 ORDER BY ck.id
 ```
+
+---
+
+---
+
+## Platform Detection
+
+Before any file operations, detect the base directory:
+
+```bash
+python3 -c "import platform; print('/Users/kmalcolm/claude/iamkaymalcolm' if platform.system() == 'Darwin' else '/home/opc/iamkaymalcolm')"
+```
+
+- **Mac (Darwin):** `BASE_DIR = /Users/kmalcolm/claude/iamkaymalcolm`
+- **OCI (Linux):** `BASE_DIR = /home/opc/iamkaymalcolm`
+
+Use `BASE_DIR` for every file path in this skill.
 
 ---
 

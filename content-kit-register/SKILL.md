@@ -16,13 +16,30 @@ Register a completed AI For You draft in the asset database and add it to the po
 
 ---
 
+---
+
+## Platform Detection
+
+Before any file operations, detect the base directory:
+
+```bash
+python3 -c "import platform; print('/Users/kmalcolm/claude/iamkaymalcolm' if platform.system() == 'Darwin' else '/home/opc/iamkaymalcolm')"
+```
+
+- **Mac (Darwin):** `BASE_DIR = /Users/kmalcolm/claude/iamkaymalcolm`
+- **OCI (Linux):** `BASE_DIR = /home/opc/iamkaymalcolm`
+
+Use `BASE_DIR` for every file path in this skill.
+
+---
+
 ## Autonomy Rules
 
 Run all steps automatically. No confirmation needed. If the post is already registered (idempotent check), report and stop — do not create duplicates.
 
 Requires:
 - `post_number` (e.g. `1043`)
-- A saved draft folder at `/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_NUMBER]-*/`
+- A saved draft folder at `{BASE_DIR}/posts/[POST_NUMBER]-*/`
 
 If the draft folder is missing, report the expected path and stop.
 
@@ -31,14 +48,14 @@ If the draft folder is missing, report the expected path and stop.
 ## Connection
 
 ```
-Helper : /Users/kmalcolm/claude/iamkaymalcolm/assets/oracle_db.py
+Helper : {BASE_DIR}/assets/oracle_db.py
 Runtime: python3.12
 ```
 
 Python preamble for all DB queries:
 ```python
 import sys
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 ```
 
@@ -48,7 +65,7 @@ from oracle_db import get_connection
 
 List the post folder:
 ```bash
-ls /Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_NUMBER]-*/
+ls {BASE_DIR}/posts/[POST_NUMBER]-*/
 ```
 
 Identify the primary platform files by name pattern:
@@ -69,7 +86,7 @@ Read the script file and the newsletter file in full. You will extract content f
 After reading both files, load the newsletter file content into a Python variable using the bash command below — do NOT inline the newsletter text as a string literal in the Python script, as it will be truncated. The file path is the one found in STEP 1.
 
 ```bash
-NEWSLETTER_FILE="/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/[POST_NUMBER]-newsletter-[SHORT_NAME]-[DATE].md"
+NEWSLETTER_FILE="{BASE_DIR}/posts/[POST_FOLDER]/[POST_NUMBER]-newsletter-[SHORT_NAME]-[DATE].md"
 ```
 
 ---
@@ -78,7 +95,7 @@ NEWSLETTER_FILE="/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/[POST_
 
 ```python
 import oracledb, datetime, sys
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 today = datetime.date.today().isoformat()
 post_number = "[POST_NUMBER]"
@@ -249,7 +266,7 @@ print(f"ASSET_ID={asset_id}")
 
 ```python
 import sys
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 import datetime
 today = datetime.date.today().isoformat()
@@ -257,7 +274,7 @@ con = get_connection()
 cur = con.cursor()
 cur.execute(
     "UPDATE assets SET file_path=:1, updated_date=:2 WHERE id=:3",
-    ("/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/[POST_NUMBER]-[SHORT_NAME]-script-[DATE].md",
+    ("{BASE_DIR}/posts/[POST_FOLDER]/[POST_NUMBER]-[SHORT_NAME]-script-[DATE].md",
      today, asset_id))
 con.commit()
 con.close()
@@ -265,7 +282,7 @@ con.close()
 
 Then refresh the registry:
 ```
-/opt/homebrew/bin/python3.12 /Users/kmalcolm/claude/iamkaymalcolm/assets/manage-assets.py export-md
+/opt/homebrew/bin/python3.12 {BASE_DIR}/assets/manage-assets.py export-md
 ```
 
 ---
@@ -274,7 +291,7 @@ Then refresh the registry:
 
 ```python
 import sys
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 con = get_connection()
 cur = con.cursor()
@@ -290,7 +307,7 @@ con.close()
 To view the current queue at any time:
 ```python
 import sys
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 con = get_connection()
 cur = con.cursor()

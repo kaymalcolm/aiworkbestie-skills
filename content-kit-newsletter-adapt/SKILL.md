@@ -16,9 +16,26 @@ Adapts external source material (another creator's newsletter, article, or URL) 
 
 ---
 
+---
+
+## Platform Detection
+
+Before any file operations, detect the base directory:
+
+```bash
+python3 -c "import platform; print('/Users/kmalcolm/claude/iamkaymalcolm' if platform.system() == 'Darwin' else '/home/opc/iamkaymalcolm')"
+```
+
+- **Mac (Darwin):** `BASE_DIR = /Users/kmalcolm/claude/iamkaymalcolm`
+- **OCI (Linux):** `BASE_DIR = /home/opc/iamkaymalcolm`
+
+Use `BASE_DIR` for every file path in this skill.
+
+---
+
 ## Autonomy Rules
 
-Run the full workflow with no confirmation. Do not ask for approval before writing the file. Auto-detect the next post number if not given (count folders in `/Users/kmalcolm/claude/iamkaymalcolm/posts/` matching `[0-9][0-9][0-9][0-9]-*`). Read the source, pick the structure, map the content, write all four sections, grade, fix, save.
+Run the full workflow with no confirmation. Do not ask for approval before writing the file. Auto-detect the next post number if not given (count folders in `{BASE_DIR}/posts/` matching `[0-9][0-9][0-9][0-9]-*`). Read the source, pick the structure, map the content, write all four sections, grade, fix, save.
 
 ---
 
@@ -41,7 +58,7 @@ Extract from the source:
 
 If not passed as an argument:
 ```bash
-ls /Users/kmalcolm/claude/iamkaymalcolm/posts/ | grep -E '^[0-9]{4}-' | sort | tail -1
+ls {BASE_DIR}/posts/ | grep -E '^[0-9]{4}-' | sort | tail -1
 ```
 Increment by 1 for the new post number.
 
@@ -49,7 +66,7 @@ Derive `SLUG` from the topic (kebab-case, 3-5 words, no stop words).
 
 Create the post folder:
 ```bash
-mkdir -p /Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_NUMBER]-[SLUG]
+mkdir -p {BASE_DIR}/posts/[POST_NUMBER]-[SLUG]
 ```
 
 ---
@@ -87,7 +104,7 @@ Build a content map:
 
 Drop source content that is:
 - Too technical for a non-engineer audience
-- Covered by a previous AI For You post (check recent posts in `/Users/kmalcolm/claude/iamkaymalcolm/posts/`)
+- Covered by a previous AI For You post (check recent posts in `{BASE_DIR}/posts/`)
 - Not actionable for a corporate professional
 
 Add Kay's angle where the source is generic — her Oracle VP perspective, specific corporate use cases, things she has done herself.
@@ -219,7 +236,7 @@ Specific checks for adapted content:
 
 ### STEP 6 — Save the file
 
-Save to: `/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_NUMBER]-[SLUG]/[POST_NUMBER]-[SLUG]-newsletter-[YYYY-MM-DD].md`
+Save to: `{BASE_DIR}/posts/[POST_NUMBER]-[SLUG]/[POST_NUMBER]-[SLUG]-newsletter-[YYYY-MM-DD].md`
 
 File structure (in this order):
 1. File header (Series, Platform, Format, Full content or tease, Status, Date)

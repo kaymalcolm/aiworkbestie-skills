@@ -6,7 +6,7 @@ Generate a complete multi-platform content package for Kay Malcolm's "AI For You
 
 **From newsletter file (Phase 3 in pipeline):** User provides a path to a newsletter file (matching `[POST_NUMBER]-[SLUG]-newsletter-[DATE].md`) or says "run Phase 3 on [newsletter file]" / "continue from the newsletter file." In this mode, the newsletter content is already written — skip to social content only.
 
-**From research file (preferred):** User provides a path to a research file (e.g. `/Users/kmalcolm/claude/iamkaymalcolm/research/2026-05-18-what-are-skills-research.md`) or says "go full mode on the research file" / "build out the full package from the research."
+**From research file (preferred):** User provides a path to a research file (e.g. `{BASE_DIR}/research/2026-05-18-what-are-skills-research.md`) or says "go full mode on the research file" / "build out the full package from the research."
 
 **From topic:** User types `/content-kit "[topic]"` or `/content-kit "[topic]" --slug my-custom-slug`
 
@@ -20,6 +20,23 @@ Generate a complete multi-platform content package for Kay Malcolm's "AI For You
 - "Write the next AI For You post"
 - "Here's the transcript, build the full package"
 - "Go full mode" / "build it out" / "run full mode on [research file]"
+
+---
+
+---
+
+## Platform Detection
+
+Before any file operations, detect the base directory:
+
+```bash
+python3 -c "import platform; print('/Users/kmalcolm/claude/iamkaymalcolm' if platform.system() == 'Darwin' else '/home/opc/iamkaymalcolm')"
+```
+
+- **Mac (Darwin):** `BASE_DIR = /Users/kmalcolm/claude/iamkaymalcolm`
+- **OCI (Linux):** `BASE_DIR = /home/opc/iamkaymalcolm`
+
+Use `BASE_DIR` for every file path in this skill.
 
 ---
 
@@ -48,7 +65,7 @@ When the input is a newsletter file path (or when called by the orchestrator aft
 
 2. Find and read the research file to get the B-roll direction, on-screen text hook, and hooks:
    ```bash
-   ls /Users/kmalcolm/claude/iamkaymalcolm/research/*[SLUG]*research*.md 2>/dev/null | tail -1
+   ls {BASE_DIR}/research/*[SLUG]*research*.md 2>/dev/null | tail -1
    ```
    If found: read it, carry forward B-roll Direction, On-screen Text Hook, Hook Options, Audience Research verbatim.
    If not found: note it and proceed — B-roll direction will be written fresh in STEP 3b.
@@ -91,22 +108,22 @@ Proceed from STEP 1 → STEP 2 → STEP 2b (register keyword) → STEP 3 (carous
 Skip this step if a research file was provided. Otherwise, before writing a single word of content, read these files.
 
 1. **Master brand guide (brand voice, visual brand, positioning — all in one):**
-   `/Users/kmalcolm/claude/iamkaymalcolm/strategy/iamkaymalcolm-brand-guide.md`
+   `{BASE_DIR}/strategy/iamkaymalcolm-brand-guide.md`
 
 2. **Content strategy:**
-   `/Users/kmalcolm/claude/iamkaymalcolm/strategy/general-strategy.md`
+   `{BASE_DIR}/strategy/general-strategy.md`
 
 3. **Content plan files (pain points and audience context):**
-   List all `.md` files in `/Users/kmalcolm/claude/iamkaymalcolm/strategy/` and read any that contain content plans, pain points, or audience notes. Use these to sharpen the pain framing.
+   List all `.md` files in `{BASE_DIR}/strategy/` and read any that contain content plans, pain points, or audience notes. Use these to sharpen the pain framing.
 
 4. **Existing content drafts (scan for topic overlap):**
-   List files in `/Users/kmalcolm/claude/iamkaymalcolm/content-drafts/` and read any that look topically related.
+   List files in `{BASE_DIR}/content-drafts/` and read any that look topically related.
 
 ---
 
 ### STEP 1-PENDING-POST  -  Extract topic from a pending markdown file (pending-post mode only)
 
-Read the file at the provided path (or if no path was given, list files in `/Users/kmalcolm/claude/iamkaymalcolm/pending-posts/` and use the most recently modified `.md` file that is not in `archive/`). Extract:
+Read the file at the provided path (or if no path was given, list files in `{BASE_DIR}/pending-posts/` and use the most recently modified `.md` file that is not in `archive/`). Extract:
 
 - **TOPIC**: Summarize the core subject in 5-10 words — reframe in Kay's audience context: career women using AI at work, not a general tech audience.
 - **PAIN POINT**: What frustration does the source content address? Translate into the pain Kay's audience actually feels.
@@ -121,7 +138,7 @@ Do NOT carry over branding, usernames, creator names, or source attribution.
 
 **After saving the content package in STEP 5**, move the source file to archive:
 ```
-mv [source file path] /Users/kmalcolm/claude/iamkaymalcolm/pending-posts/archive/
+mv [source file path] {BASE_DIR}/pending-posts/archive/
 ```
 Confirm the move completed. Create the archive directory if it doesn't exist.
 
@@ -220,7 +237,7 @@ Every post uses a single comment keyword woven through Instagram caption, YouTub
 
 ```python
 import sys
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 
 con = get_connection()
@@ -241,7 +258,7 @@ Write as `COMMENT_KEYWORD = "[WORD]"` at the top of the output file.
 
 ```python
 import datetime, sys
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 today = datetime.date.today().isoformat()
 keyword = "[CHOSEN KEYWORD]"
@@ -654,7 +671,7 @@ All platforms post on the same day via Buffer. Do NOT suggest a posting sequence
 ### STEP 5  -  Save the output files
 
 Save the content package as separate platform files. All files go in the post folder:
-`/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/`
+`{BASE_DIR}/posts/[POST_FOLDER]/`
 
 Where `POST_FOLDER` = `[POST_NUMBER]-[slug]`. Create the folder if it doesn't exist.
 
@@ -697,7 +714,7 @@ After saving all platform files, check whether a brief already exists for this p
 
 **Find the brief:**
 ```bash
-ls /Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/[POST_NUMBER]-*-brief-*.md 2>/dev/null | tail -1
+ls {BASE_DIR}/posts/[POST_FOLDER]/[POST_NUMBER]-*-brief-*.md 2>/dev/null | tail -1
 ```
 
 If a brief is found:

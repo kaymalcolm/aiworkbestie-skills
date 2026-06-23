@@ -14,6 +14,27 @@ Generate 3 Instagram Story frames for an AI For You post using NotebookLM. Stori
 
 ---
 
+---
+
+## Platform Detection
+
+Before any file operations, detect the base directory:
+
+```bash
+python3 -c "import platform; print('/Users/kmalcolm/claude/iamkaymalcolm' if platform.system() == 'Darwin' else '/home/opc/iamkaymalcolm')"
+```
+
+- **Mac (Darwin):** `BASE_DIR = /Users/kmalcolm/claude/iamkaymalcolm`
+- **OCI (Linux):** `BASE_DIR = /home/opc/iamkaymalcolm`
+
+Use `BASE_DIR` for every file path in this skill.
+
+Also set `NOTEBOOKLM_PYTHON`:
+- **Mac:** `/opt/homebrew/bin/python3.12`
+- **OCI:** `/home/opc/notebooklm-venv/bin/python3.12`
+
+---
+
 ## Autonomy Rules
 
 Run the full workflow with no confirmation. All 3 stories go into the same NotebookLM notebook. Fire all 3 generate commands before waiting on any  -  they run in parallel. Wait and download each as it completes. Show every image inline as it downloads.
@@ -24,7 +45,7 @@ Run the full workflow with no confirmation. All 3 stories go into the same Noteb
 
 Stories use the same gold-standard editorial illustration style as the cover infographic — NOT flat pastel backgrounds. The illustrated scene IS the background.
 
-**Reference:** `/Users/kmalcolm/claude/iamkaymalcolm/posts/1043-switching-to-claude/infographic/1043-1183-switching-to-claude-infographic-cover-2026-05-22.png`
+**Reference:** `{BASE_DIR}/posts/1043-switching-to-claude/infographic/1043-1183-switching-to-claude-infographic-cover-2026-05-22.png`
 
 ```
 ILLUSTRATION STYLE:
@@ -62,7 +83,7 @@ Link sticker: Soft rounded pill button, gold/amber fill or white fill
 
 ### STEP 0  -  Identify the target post
 
-- Find the post folder: `/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_NUMBER]-*/` and locate the draft file inside it (matching `[POST_NUMBER]-*-draft-*.md`). Note the full post folder name as `POST_FOLDER` (e.g. `1031-where-to-start-with-ai`) and derive `SHORT_NAME` from it (e.g. `where-to-start-with-ai`).
+- Find the post folder: `{BASE_DIR}/posts/[POST_NUMBER]-*/` and locate the draft file inside it (matching `[POST_NUMBER]-*-draft-*.md`). Note the full post folder name as `POST_FOLDER` (e.g. `1031-where-to-start-with-ai`) and derive `SHORT_NAME` from it (e.g. `where-to-start-with-ai`).
 - Also find the brief: `posts/[POST_FOLDER]/content-kit-[POST_NUMBER]-brief.md` (if it exists)
 - Read both files. The draft has the full newsletter content and hook. The brief has the distilled production notes and content angles.
 
@@ -88,7 +109,7 @@ Check `stories/.notebooks.json` first. If the notebook already exists for this p
 import json, subprocess
 from pathlib import Path
 
-stories_dir = Path("/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/stories")
+stories_dir = Path("{BASE_DIR}/posts/[POST_FOLDER]/stories")
 stories_dir.mkdir(parents=True, exist_ok=True)
 notebooks_file = stories_dir / ".notebooks.json"
 
@@ -120,13 +141,13 @@ else:
 If the notebook was just created, add the draft file and brief (if it exists). Run adds in parallel, wait in parallel.
 
 ```
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source add [draft file path] -n [notebook_id] --json
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source add [brief file path] -n [notebook_id] --json  # if exists
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli source add [draft file path] -n [notebook_id] --json
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli source add [brief file path] -n [notebook_id] --json  # if exists
 ```
 
 Wait:
 ```
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source wait [source_id] -n [notebook_id] --timeout 120
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli source wait [source_id] -n [notebook_id] --timeout 120
 ```
 
 If any source returns "not found", re-add it and wait again before proceeding.
@@ -353,7 +374,7 @@ Link sticker: "Read the full issue →"
 
 Fire all 3 as portrait (adapt prompts with Kay variant where applicable):
 ```
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli generate infographic --orientation portrait --detail detailed --style professional "[story instructions]" -n [notebook_id] --json
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli generate infographic --orientation portrait --detail detailed --style professional "[story instructions]" -n [notebook_id] --json
 ```
 
 Note all 3 artifact IDs: `ARTIFACT_S1` through `ARTIFACT_S3`.
@@ -368,7 +389,7 @@ Before downloading, register all 3 story assets in the DB to get their IDs and c
 import oracledb, datetime, sys
 from pathlib import Path
 
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 today = datetime.date.today().isoformat()
 short_name = "[SHORT_NAME]"
@@ -405,8 +426,8 @@ Note the 3 IDs. Build canonical filenames as `[POST_NUMBER]-[ASSET_ID]-[SHORT_NA
 Wait for all 3 in parallel, then download each as it completes. Show the image inline immediately after each download  -  don't wait for all 3 to finish before showing any.
 
 ```
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli artifact wait [ARTIFACT_Sn] -n [notebook_id] --timeout 600
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli download infographic /Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/stories/[POST_NUMBER]-[S_ID]-[SHORT_NAME]-story-0[N]-[DATE].png -a [ARTIFACT_Sn] -n [notebook_id]
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli artifact wait [ARTIFACT_Sn] -n [notebook_id] --timeout 600
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli download infographic {BASE_DIR}/posts/[POST_FOLDER]/stories/[POST_NUMBER]-[S_ID]-[SHORT_NAME]-story-0[N]-[DATE].png -a [ARTIFACT_Sn] -n [notebook_id]
 ```
 
 Output file naming (labels reflect actual types chosen):
@@ -416,7 +437,7 @@ Output file naming (labels reflect actual types chosen):
 | Story 2  -  [TYPE_2] | `[POST_NUMBER]-[S2_ID]-[SHORT_NAME]-story-02-[DATE].png` |
 | Story 3  -  [TYPE_3] (with Kay) | `[POST_NUMBER]-[S3_ID]-[SHORT_NAME]-story-03-[DATE].png` |
 
-All save to: `/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/stories/`
+All save to: `{BASE_DIR}/posts/[POST_FOLDER]/stories/`
 
 Create the `stories/` subdirectory if it does not exist. After all 3 are downloaded, update the DB file paths:
 
@@ -424,9 +445,9 @@ Create the `stories/` subdirectory if it does not exist. After all 3 are downloa
 import oracledb, sys
 from pathlib import Path
 
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
-STORIES = Path("/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/stories")
+STORIES = Path("{BASE_DIR}/posts/[POST_FOLDER]/stories")
 today = "[DATE]"
 
 con = get_connection()
@@ -439,7 +460,7 @@ con.commit()
 con.close()
 ```
 
-Then refresh: `/opt/homebrew/bin/python3.12 /Users/kmalcolm/claude/iamkaymalcolm/assets/manage-assets.py export-md`
+Then refresh: `/opt/homebrew/bin/python3.12 {BASE_DIR}/assets/manage-assets.py export-md`
 
 ---
 
@@ -521,7 +542,7 @@ After branding is removed from all 3, upload each file to Google Drive using rcl
 ```python
 /opt/homebrew/bin/python3.12 - << 'PYEOF'
 import subprocess, json, os, sys
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 
 ROOT = "1IMsrLBybekEcIkg2-BVw9_9udnDtQM48"
@@ -584,7 +605,7 @@ post_folder = "[POST_FOLDER]"
 post_number = "[POST_NUMBER]"
 ROOT = "1IMsrLBybekEcIkg2-BVw9_9udnDtQM48"
 
-brief_files = sorted(Path(f"/Users/kmalcolm/claude/iamkaymalcolm/posts/{post_folder}").glob(f"{post_number}-*-brief-*.md"))
+brief_files = sorted(Path(f"{BASE_DIR}/posts/{post_folder}").glob(f"{post_number}-*-brief-*.md"))
 if not brief_files:
     print("No brief found for this post - skipping brief sync")
 else:
@@ -602,7 +623,7 @@ PYEOF
 
 ### STEP 8  -  Update tracking files
 
-**`/Users/kmalcolm/claude/iamkaymalcolm/todo.md`**
+**`{BASE_DIR}/todo.md`**
 - Add to COMPLETED: `- [x] Stories for post [NNN] generated (3 frames: [TYPE_1] w/Kay, [TYPE_2], [TYPE_3] w/Kay)`
 
 ---
@@ -642,7 +663,7 @@ Stories are Instagram only. Do not generate story content for any other platform
 
 ## NotebookLM CLI Notes
 
-- Always use: `/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli`
+- Always use: `{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli`
 - Never use the bare `notebooklm` command (runs on Python 3.9, will fail)
 - If auth fails: `notebooklm login` to re-authenticate
 - Rate limiting: if generation fails, wait 5-10 min and retry once

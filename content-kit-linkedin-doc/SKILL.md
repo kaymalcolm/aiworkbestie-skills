@@ -23,6 +23,23 @@ Generate a polished, branded LinkedIn document (PDF carousel) for an AI For You 
 
 ---
 
+---
+
+## Platform Detection
+
+Before any file operations, detect the base directory:
+
+```bash
+python3 -c "import platform; print('/Users/kmalcolm/claude/iamkaymalcolm' if platform.system() == 'Darwin' else '/home/opc/iamkaymalcolm')"
+```
+
+- **Mac (Darwin):** `BASE_DIR = /Users/kmalcolm/claude/iamkaymalcolm`
+- **OCI (Linux):** `BASE_DIR = /home/opc/iamkaymalcolm`
+
+Use `BASE_DIR` for every file path in this skill.
+
+---
+
 ## Autonomy Rules
 
 Run the full workflow with no confirmation. Auto-detect the most recent draft if no post number given. Slides take 5-10 min per image to generate — fire all generates before waiting on any.
@@ -33,7 +50,7 @@ Run the full workflow with no confirmation. Auto-detect the most recent draft if
 
 ### STEP 0 — Identify the target draft
 
-- Find the post folder: `/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_NUMBER]-*/`
+- Find the post folder: `{BASE_DIR}/posts/[POST_NUMBER]-*/`
 - Find the draft file inside it matching `[POST_NUMBER]-*-draft-*.md`
 - Also check for a `### LINKEDIN DOCUMENT BRIEF` section in the draft — use it if present. Otherwise derive from the draft's prompts/moves/carousel sections.
 - Note `POST_FOLDER` (e.g. `1031-where-to-start-with-ai`), `POST_NUMBER`, `SHORT_NAME` (topic slug from folder name).
@@ -72,7 +89,7 @@ Note the notebook ID as `NB_ID`.
 Run both adds in parallel:
 ```
 /opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source add [DRAFT_FILE_PATH] -n [NB_ID] --json
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source add /Users/kmalcolm/claude/iamkaymalcolm/strategy/iamkaymalcolm-brand-guide.md -n [NB_ID] --json
+/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source add {BASE_DIR}/strategy/iamkaymalcolm-brand-guide.md -n [NB_ID] --json
 ```
 
 Wait for both in parallel:
@@ -243,7 +260,7 @@ Before downloading, register a single `linkedin-doc-slides` asset for this post 
 import oracledb, datetime, sys
 from pathlib import Path
 
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 today = datetime.date.today().isoformat()
 short_name = "[SHORT_NAME]"  # derived from folder slug
@@ -282,7 +299,7 @@ Note as `ASSET_ID`. Build canonical filenames (zero-padded slide numbers):
 - Teaser:  `[POST_NUMBER]-[ASSET_ID]-[SHORT_NAME]-linkedin-doc-slide03-[DATE].png`
 - CTA:     `[POST_NUMBER]-[ASSET_ID]-[SHORT_NAME]-linkedin-doc-slide04-[DATE].png`
 
-Save destination: `/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/infographic/`
+Save destination: `{BASE_DIR}/posts/[POST_FOLDER]/infographic/`
 Create the folder if it doesn't exist.
 
 ---
@@ -434,7 +451,7 @@ PYEOF
 import oracledb, datetime, subprocess, json, os, sys
 from pathlib import Path
 
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 today = datetime.date.today().isoformat()
 post_folder = "[POST_FOLDER]"
@@ -452,7 +469,7 @@ con.close()
 
 # Upload all slide PNGs to Drive
 ROOT = "1ZISATI9hlcdRK0dpWBRoLcUWR1Wn19oe"
-infog_dir = Path("/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/infographic")
+infog_dir = Path("{BASE_DIR}/posts/[POST_FOLDER]/infographic")
 slide_files = sorted(infog_dir.glob("*linkedin-doc-slide*.png"))
 
 subprocess.run(["rclone", "mkdir", f"gdrive:posts/{post_folder}/infographic",
@@ -479,7 +496,7 @@ con.close()
 print(f"Drive: {len(slide_files)} slides → infographic folder {folder_id}")
 PYEOF
 
-/opt/homebrew/bin/python3.12 /Users/kmalcolm/claude/iamkaymalcolm/assets/manage-assets.py export-md
+/opt/homebrew/bin/python3.12 {BASE_DIR}/assets/manage-assets.py export-md
 ```
 
 ---
@@ -499,7 +516,7 @@ Tell the user:
 
 ### STEP P0 — Find the post folder and all slide PNGs
 
-- Find: `/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_NUMBER]-*/infographic/`
+- Find: `{BASE_DIR}/posts/[POST_NUMBER]-*/infographic/`
 - Glob for all files matching `*linkedin-doc-slide*.png` in that folder (NOT in archive/).
 - Sort by filename (slide01, slide02... are zero-padded so lexicographic sort = slide order).
 - Confirm slide count and list them to yourself before proceeding.
@@ -514,7 +531,7 @@ from PIL import Image
 from pathlib import Path
 import glob, re
 
-infographic_dir = Path("/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/infographic")
+infographic_dir = Path("{BASE_DIR}/posts/[POST_FOLDER]/infographic")
 output_pdf = infographic_dir / "[POST_NUMBER]-[ASSET_ID]-[SHORT_NAME]-linkedin-doc-[DATE].pdf"
 
 # Find and sort slide files
@@ -549,7 +566,7 @@ Look up the existing `linkedin-doc-slides` asset for this post. Create a new sib
 import oracledb, datetime, sys
 from pathlib import Path
 
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 today = datetime.date.today().isoformat()
 short_name   = "[SHORT_NAME]"
@@ -581,7 +598,7 @@ con.close()
 print(f"PDF_ASSET_ID={pdf_id}")
 PYEOF
 
-/opt/homebrew/bin/python3.12 /Users/kmalcolm/claude/iamkaymalcolm/assets/manage-assets.py export-md
+/opt/homebrew/bin/python3.12 {BASE_DIR}/assets/manage-assets.py export-md
 ```
 
 ---
@@ -604,7 +621,7 @@ Tell the user:
 | PDF | `[POST_NUMBER]-[ASSET_ID]-[SHORT_NAME]-linkedin-doc-[DATE].pdf` |
 
 - Slide numbers are zero-padded two digits: `slide01`, `slide02`, `slide03`, `slide04`
-- All save to: `/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/infographic/`
+- All save to: `{BASE_DIR}/posts/[POST_FOLDER]/infographic/`
 - Never save to archive/, strategy/, or content-drafts/
 
 ---

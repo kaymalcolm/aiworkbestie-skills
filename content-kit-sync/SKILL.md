@@ -16,6 +16,23 @@ Also responds to `/content-kit-refresh [post_number]` (legacy alias).
 
 ---
 
+---
+
+## Platform Detection
+
+Before any file operations, detect the base directory:
+
+```bash
+python3 -c "import platform; print('/Users/kmalcolm/claude/iamkaymalcolm' if platform.system() == 'Darwin' else '/home/opc/iamkaymalcolm')"
+```
+
+- **Mac (Darwin):** `BASE_DIR = /Users/kmalcolm/claude/iamkaymalcolm`
+- **OCI (Linux):** `BASE_DIR = /home/opc/iamkaymalcolm`
+
+Use `BASE_DIR` for every file path in this skill.
+
+---
+
 ## Autonomy Rules
 
 Run all steps automatically with no confirmation unless:
@@ -27,14 +44,14 @@ Run all steps automatically with no confirmation unless:
 ## Connection
 
 ```
-Helper : /Users/kmalcolm/claude/iamkaymalcolm/assets/oracle_db.py
+Helper : {BASE_DIR}/assets/oracle_db.py
 Runtime: python3.12
 ```
 
 Python preamble for all DB queries:
 ```python
 import sys
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 ```
 
@@ -191,7 +208,7 @@ con.close()
 
 ### STEP 4 — Resolve local file path per bucket
 
-Post folder: `/Users/kmalcolm/claude/iamkaymalcolm/posts/{post_number}-{short_name}/`
+Post folder: `{BASE_DIR}/posts/{post_number}-{short_name}/`
 
 For each bucket in `to_sync`, find the local file by scanning the post folder for `.md` files matching the bucket's pattern:
 

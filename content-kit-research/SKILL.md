@@ -19,6 +19,23 @@ Run audience research, generate hook options, and write the B-roll direction + o
 
 ---
 
+---
+
+## Platform Detection
+
+Before any file operations, detect the base directory:
+
+```bash
+python3 -c "import platform; print('/Users/kmalcolm/claude/iamkaymalcolm' if platform.system() == 'Darwin' else '/home/opc/iamkaymalcolm')"
+```
+
+- **Mac (Darwin):** `BASE_DIR = /Users/kmalcolm/claude/iamkaymalcolm`
+- **OCI (Linux):** `BASE_DIR = /home/opc/iamkaymalcolm`
+
+Use `BASE_DIR` for every file path in this skill.
+
+---
+
 ## Autonomy Rules
 
 Run the full workflow with no confirmation unless:
@@ -37,22 +54,22 @@ No mode question. This skill is research-only. Save the research file and stop.
 Before writing a single word of content, read these files. Do not skip this step.
 
 1. **Master brand guide:**
-   `/Users/kmalcolm/claude/iamkaymalcolm/strategy/iamkaymalcolm-brand-guide.md`
+   `{BASE_DIR}/strategy/iamkaymalcolm-brand-guide.md`
 
 2. **Content strategy:**
-   `/Users/kmalcolm/claude/iamkaymalcolm/strategy/general-strategy.md`
+   `{BASE_DIR}/strategy/general-strategy.md`
 
 3. **Content plan files (pain points and audience context):**
-   List all `.md` files in `/Users/kmalcolm/claude/iamkaymalcolm/strategy/` and read any that contain content plans, pain points, or audience notes. Use these to sharpen the pain framing — these files may name specific pains the audience has expressed.
+   List all `.md` files in `{BASE_DIR}/strategy/` and read any that contain content plans, pain points, or audience notes. Use these to sharpen the pain framing — these files may name specific pains the audience has expressed.
 
 4. **Existing content drafts (scan for topic overlap):**
-   List files in `/Users/kmalcolm/claude/iamkaymalcolm/content-drafts/` and read any that look topically related.
+   List files in `{BASE_DIR}/content-drafts/` and read any that look topically related.
 
 ---
 
 ### STEP 1-PENDING-POST — Extract topic from a pending markdown file (pending-post mode only)
 
-Read the file at the provided path (or if no path was given, list files in `/Users/kmalcolm/claude/iamkaymalcolm/pending-posts/` and use the most recently modified `.md` file that is not in `archive/`). Extract:
+Read the file at the provided path (or if no path was given, list files in `{BASE_DIR}/pending-posts/` and use the most recently modified `.md` file that is not in `archive/`). Extract:
 
 - **TOPIC**: Summarize the core subject in 5-10 words. Reframe in Kay's audience context: career women using AI at work, not a general tech audience.
 - **PAIN POINT**: What frustration does the source address? Translate into the pain Kay's audience actually feels.
@@ -67,7 +84,7 @@ Do NOT carry over branding, usernames, creator names, or source attribution into
 
 **After the research file is saved in STEP R-SAVE**, move the source file to the `archive/` folder:
 ```
-mv [source file path] /Users/kmalcolm/claude/iamkaymalcolm/pending-posts/archive/
+mv [source file path] {BASE_DIR}/pending-posts/archive/
 ```
 Confirm the move completed. If the archive directory does not exist, create it first.
 
@@ -124,7 +141,7 @@ If web search is unavailable or returns nothing relevant, note it and proceed wi
 
 Extract:
 - `TOPIC`: The content idea string
-- `POST_NUMBER` (tentative): Count files in content-drafts matching `content-kit-0*.md`. Write as "Proposed post number" — not finalized until full mode.
+- `POST_NUMBER`: If `--post-number` was passed as an argument, use that value (it is the real pipeline-assigned number). Otherwise count files in content-drafts matching `content-kit-0*.md` as a tentative number. Write as "Proposed post number" — not finalized until full mode.
 - `SLUG` (working): Derive from topic (lowercase, hyphens, 3-5 meaningful words, drop stop words). Save as "Proposed slug" — not finalized, can be overridden in full mode.
 
 If `POST_NUMBER` cannot be determined, use `NNN`.
@@ -147,7 +164,7 @@ Query the DB for all previously used keywords. Read only — do not write.
 
 ```python
 import sys
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 
 con = get_connection()
@@ -230,8 +247,12 @@ Last 2-3 seconds. Specify text on screen. Platform-specific:
 
 ### STEP R-SAVE — Save the research file
 
-Save to:
-`/Users/kmalcolm/claude/iamkaymalcolm/research/[DATE]-[TOPIC-SLUG]-research.md`
+**Pipeline mode** (when `--post-number` was provided in the invocation): Save to the post folder so the orchestrator can find it:
+`{BASE_DIR}/posts/[POST_NUMBER]-[TOPIC-SLUG]/[POST_NUMBER]-[TOPIC-SLUG]-research-[DATE].md`
+Create the post folder if it does not exist.
+
+**Interactive mode** (no `--post-number`): Save to:
+`{BASE_DIR}/research/[DATE]-[TOPIC-SLUG]-research.md`
 
 Where `DATE` = today (YYYY-MM-DD) and `TOPIC-SLUG` is the working slug from STEP 1.
 

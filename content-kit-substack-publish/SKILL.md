@@ -21,6 +21,23 @@ The `mcp__substack__substack_add_image` tool accepts a `url` parameter. Passing 
 
 ---
 
+---
+
+## Platform Detection
+
+Before any file operations, detect the base directory:
+
+```bash
+python3 -c "import platform; print('/Users/kmalcolm/claude/iamkaymalcolm' if platform.system() == 'Darwin' else '/home/opc/iamkaymalcolm')"
+```
+
+- **Mac (Darwin):** `BASE_DIR = /Users/kmalcolm/claude/iamkaymalcolm`
+- **OCI (Linux):** `BASE_DIR = /home/opc/iamkaymalcolm`
+
+Use `BASE_DIR` for every file path in this skill.
+
+---
+
 ## Autonomy Rules
 
 **Before running anything**, ask the user which actions to perform:
@@ -40,7 +57,7 @@ Only stop (without asking) if the newsletter file cannot be found.
 
 ### STEP 0 - Identify the target
 
-- If a post number is given (e.g. `1031`), find the post folder: `/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_NUMBER]-*/`
+- If a post number is given (e.g. `1031`), find the post folder: `{BASE_DIR}/posts/[POST_NUMBER]-*/`
 - Find the newsletter file inside: match `[POST_NUMBER]-*newsletter*.md` or `[POST_NUMBER]-newsletter-*.md`
 - Note the post folder path and the SHORT_NAME (slug from the folder name, e.g. `where-to-start-with-ai`)
 
@@ -48,7 +65,7 @@ Only stop (without asking) if the newsletter file cannot be found.
 
 ```python
 import sys
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 
 post_number = "[POST_NUMBER]"
@@ -193,7 +210,7 @@ After creating the draft, register it in the asset DB:
 import oracledb, datetime, sys
 from pathlib import Path
 
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 today = datetime.date.today().isoformat()
 post_number = "POST_NUMBER"
@@ -231,7 +248,7 @@ con.close()
 
 Then refresh the registry:
 ```bash
-/opt/homebrew/bin/python3.12 /Users/kmalcolm/claude/iamkaymalcolm/assets/manage-assets.py export-md
+/opt/homebrew/bin/python3.12 {BASE_DIR}/assets/manage-assets.py export-md
 ```
 
 ---

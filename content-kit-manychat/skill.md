@@ -13,6 +13,23 @@ Generate ManyChat automation configs for both the post/comment flow and the stor
 
 ---
 
+---
+
+## Platform Detection
+
+Before any file operations, detect the base directory:
+
+```bash
+python3 -c "import platform; print('/Users/kmalcolm/claude/iamkaymalcolm' if platform.system() == 'Darwin' else '/home/opc/iamkaymalcolm')"
+```
+
+- **Mac (Darwin):** `BASE_DIR = /Users/kmalcolm/claude/iamkaymalcolm`
+- **OCI (Linux):** `BASE_DIR = /home/opc/iamkaymalcolm`
+
+Use `BASE_DIR` for every file path in this skill.
+
+---
+
 ## Autonomy Rules
 
 Run the full workflow with no confirmation. If the keyword or Substack URL is missing, note it and generate the config with a clear placeholder — do not stop.
@@ -33,7 +50,7 @@ This skill runs AFTER `/content-kit-substack`. It needs:
 
 ```python
 import sys
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 
 post_number = "[POST_NUMBER]"
@@ -230,7 +247,7 @@ React to story reply with: ❤️
 ### STEP 5 — Save the config files
 
 Identify the post folder:
-`/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_NUMBER]-[SHORT_NAME]/`
+`{BASE_DIR}/posts/[POST_NUMBER]-[SHORT_NAME]/`
 
 Save two files there:
 
@@ -269,7 +286,7 @@ Upsert `post_keywords` with both config fields (JSON type — pass Python dict o
 
 ```python
 import sys, datetime
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 
 today = datetime.date.today().isoformat()
@@ -301,7 +318,7 @@ print(f"ManyChat configs written to DB for asset {asset_id}")
 ### STEP 7 — Refresh registry
 
 ```bash
-/opt/homebrew/bin/python3.12 /Users/kmalcolm/claude/iamkaymalcolm/assets/manage-assets.py export-md
+/opt/homebrew/bin/python3.12 {BASE_DIR}/assets/manage-assets.py export-md
 ```
 
 ### STEP 8 — Report back

@@ -25,6 +25,27 @@ Every post has THREE infographics:
 
 ---
 
+---
+
+## Platform Detection
+
+Before any file operations, detect the base directory:
+
+```bash
+python3 -c "import platform; print('/Users/kmalcolm/claude/iamkaymalcolm' if platform.system() == 'Darwin' else '/home/opc/iamkaymalcolm')"
+```
+
+- **Mac (Darwin):** `BASE_DIR = /Users/kmalcolm/claude/iamkaymalcolm`
+- **OCI (Linux):** `BASE_DIR = /home/opc/iamkaymalcolm`
+
+Use `BASE_DIR` for every file path in this skill.
+
+Also set `NOTEBOOKLM_PYTHON`:
+- **Mac:** `/opt/homebrew/bin/python3.12`
+- **OCI:** `/home/opc/notebooklm-venv/bin/python3.12`
+
+---
+
 ## Autonomy Rules
 
 Run the full workflow with no confirmation. Auto-detect the most recent draft if no post number is given. Generation takes 5-15 min per infographic — fire all generate commands before waiting on any, then wait and download each. Update tracking when all are done. For threads mode, use the threads platform file as the primary source (not the main draft), use the dedicated threads notebook, generate a single portrait infographic at 1080x1350, and register in the asset DB with type='infographic-threads'.
@@ -43,7 +64,7 @@ The cover is the Substack thumbnail — the first thing readers see in the feed.
 - Framed by floor-to-ceiling windows with a city skyline at golden hour/dusk glowing behind her.
 - Color palette: WARM and REGAL. Deep amber, burnt gold, warm pink, magenta, dusty rose, rich rose-gold, soft purple — the full regal sunset spectrum from golden-hour amber through warm pinks and magentas up to dusty rose and violet. NOT cool purple. NOT flat lavender. NOT dark navy.
 - Window light creates a gorgeous backlit glow. Foreground is warm dark neutrals (desk, chair, room shadow). Small plant visible to one side.
-- Reference: `/Users/kmalcolm/claude/iamkaymalcolm/posts/1043-switching-to-claude/infographic/1043-1183-switching-to-claude-infographic-cover-2026-05-22.png`
+- Reference: `{BASE_DIR}/posts/1043-switching-to-claude/infographic/1043-1183-switching-to-claude-infographic-cover-2026-05-22.png`
 
 **Text:** The newsletter title is overlaid via PIL post-processing (STEP 6c). Do NOT ask NotebookLM to render the title — the NotebookLM prompt is pure illustration only.
 
@@ -62,7 +83,7 @@ The cover is the Substack thumbnail — the first thing readers see in the feed.
 
 ### STEP 0  -  Identify the target draft and mode
 
-- If a post number is given, find the post folder: `/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_NUMBER]-*/` and locate the draft file inside it (matching `[POST_NUMBER]-*-newsletter-*.md` or `[POST_NUMBER]-*-draft-*.md`).
+- If a post number is given, find the post folder: `{BASE_DIR}/posts/[POST_NUMBER]-*/` and locate the draft file inside it (matching `[POST_NUMBER]-*-newsletter-*.md` or `[POST_NUMBER]-*-draft-*.md`).
 - If no argument, use the most recently modified draft across all post folders.
 - Note the full post folder path as `POST_FOLDER` (e.g. `1043-switching-to-claude`) — needed for output paths.
 - Check for a `cover`, `mid`, `download`, or `threads` argument to determine mode. Default (no argument) = ALL THREE (cover + mid + download).
@@ -93,7 +114,7 @@ Also note from the file header: post number, topic/slug.
 
 ### STEP 2  -  Read the visual brand guide
 
-Read the VISUAL BRAND section of `/Users/kmalcolm/claude/iamkaymalcolm/strategy/iamkaymalcolm-brand-guide.md`
+Read the VISUAL BRAND section of `{BASE_DIR}/strategy/iamkaymalcolm-brand-guide.md`
 
 Pull the AI For You infographic design system section. This gets passed to NotebookLM as design direction.
 
@@ -109,7 +130,7 @@ Each post gets exactly THREE dedicated notebooks — one per infographic type �
 import json
 from pathlib import Path
 
-infographic_dir = Path("/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/infographic")
+infographic_dir = Path("{BASE_DIR}/posts/[POST_FOLDER]/infographic")
 infographic_dir.mkdir(exist_ok=True)
 notebooks_file = infographic_dir / ".notebooks.json"
 
@@ -127,9 +148,9 @@ if notebooks_file.exists():
 
 ```bash
 # Run all three creates in parallel
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli create "AI For You #[POST_NUMBER] - Cover" --json &
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli create "AI For You #[POST_NUMBER] - Mid" --json &
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli create "AI For You #[POST_NUMBER] - Download" --json &
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli create "AI For You #[POST_NUMBER] - Cover" --json &
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli create "AI For You #[POST_NUMBER] - Mid" --json &
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli create "AI For You #[POST_NUMBER] - Download" --json &
 wait
 ```
 
@@ -139,7 +160,7 @@ Save the three IDs to `.notebooks.json`:
 import json
 from pathlib import Path
 
-notebooks_file = Path("/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/infographic/.notebooks.json")
+notebooks_file = Path("{BASE_DIR}/posts/[POST_FOLDER]/infographic/.notebooks.json")
 nb = {"cover": "[NB_COVER_ID]", "mid": "[NB_MID_ID]", "download": "[NB_DOWNLOAD_ID]"}
 notebooks_file.write_text(json.dumps(nb, indent=2))
 print(f"Saved notebook IDs: {nb}")
@@ -157,26 +178,26 @@ If notebooks were just created, add both sources to all three in parallel:
 
 ```bash
 DRAFT="[draft file path]"
-BRAND="/Users/kmalcolm/claude/iamkaymalcolm/strategy/iamkaymalcolm-brand-guide.md"
+BRAND="{BASE_DIR}/strategy/iamkaymalcolm-brand-guide.md"
 
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source add "$DRAFT" -n [NB_COVER] --json &
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source add "$BRAND"  -n [NB_COVER] --json &
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source add "$DRAFT" -n [NB_MID] --json &
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source add "$BRAND"  -n [NB_MID] --json &
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source add "$DRAFT" -n [NB_DOWNLOAD] --json &
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source add "$BRAND"  -n [NB_DOWNLOAD] --json &
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli source add "$DRAFT" -n [NB_COVER] --json &
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli source add "$BRAND"  -n [NB_COVER] --json &
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli source add "$DRAFT" -n [NB_MID] --json &
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli source add "$BRAND"  -n [NB_MID] --json &
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli source add "$DRAFT" -n [NB_DOWNLOAD] --json &
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli source add "$BRAND"  -n [NB_DOWNLOAD] --json &
 wait
 ```
 
 Wait for all six sources in parallel:
 
 ```bash
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source wait [SRC_COVER_1]   -n [NB_COVER]    --timeout 120 &
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source wait [SRC_COVER_2]   -n [NB_COVER]    --timeout 120 &
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source wait [SRC_MID_1]     -n [NB_MID]      --timeout 120 &
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source wait [SRC_MID_2]     -n [NB_MID]      --timeout 120 &
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source wait [SRC_DOWNLOAD_1] -n [NB_DOWNLOAD] --timeout 120 &
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli source wait [SRC_DOWNLOAD_2] -n [NB_DOWNLOAD] --timeout 120 &
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli source wait [SRC_COVER_1]   -n [NB_COVER]    --timeout 120 &
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli source wait [SRC_COVER_2]   -n [NB_COVER]    --timeout 120 &
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli source wait [SRC_MID_1]     -n [NB_MID]      --timeout 120 &
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli source wait [SRC_MID_2]     -n [NB_MID]      --timeout 120 &
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli source wait [SRC_DOWNLOAD_1] -n [NB_DOWNLOAD] --timeout 120 &
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli source wait [SRC_DOWNLOAD_2] -n [NB_DOWNLOAD] --timeout 120 &
 wait
 ```
 
@@ -187,7 +208,7 @@ If any source returns "not found", re-add it to that notebook and wait again bef
 ### STEP 5  -  Generate infographic(s)
 
 **Always use Python 3.12:**
-`/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli`
+`{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli`
 
 Fire ALL generate commands before waiting on any — they run in parallel inside NotebookLM. Each goes to its own dedicated notebook.
 
@@ -223,7 +244,7 @@ DO NOT INCLUDE: any text, any title, any series badge, any handle, any subtitle,
 
 Run against the cover notebook:
 ```
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli generate infographic --orientation portrait --detail detailed --style professional "[instructions]" -n [NB_COVER] --json
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli generate infographic --orientation portrait --detail detailed --style professional "[instructions]" -n [NB_COVER] --json
 ```
 
 Note artifact ID as `ARTIFACT_COVER`.
@@ -255,7 +276,7 @@ THAT IS ALL. No other text. No sections. No rows. No headers. No additional layo
 
 Run against the mid notebook:
 ```
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli generate infographic --orientation portrait --detail detailed --style professional "[instructions]" -n [NB_MID] --json
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli generate infographic --orientation portrait --detail detailed --style professional "[instructions]" -n [NB_MID] --json
 ```
 
 Note artifact ID as `ARTIFACT_MID`.
@@ -315,7 +336,7 @@ If any additional illustrated human figure appears beyond the header, she is an 
 
 Run against the download notebook:
 ```
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli generate infographic --orientation portrait --detail detailed --style professional "[instructions]" -n [NB_DOWNLOAD] --json
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli generate infographic --orientation portrait --detail detailed --style professional "[instructions]" -n [NB_DOWNLOAD] --json
 ```
 
 Note artifact ID as `ARTIFACT_DOWNLOAD`.
@@ -358,7 +379,7 @@ Bottom: @iamkaymalcolm
 
 Run against the threads notebook:
 ```
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli generate infographic --orientation portrait --detail detailed --style professional "[instructions]" -n [NB_THREADS] --json
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli generate infographic --orientation portrait --detail detailed --style professional "[instructions]" -n [NB_THREADS] --json
 ```
 
 Note artifact ID as `ARTIFACT_THREADS`.
@@ -377,7 +398,7 @@ Derive `SHORT_NAME` from the draft topic slug (e.g. topic "Switching to Claude" 
 import oracledb, datetime, sys
 from pathlib import Path
 
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 today = datetime.date.today().isoformat()
 short_name = "[SHORT_NAME]"
@@ -422,7 +443,7 @@ Note the ID as `THREADS_ID`. Build the canonical filename:
 import oracledb, datetime, sys
 from pathlib import Path
 
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 today = datetime.date.today().isoformat()
 short_name = "[SHORT_NAME]"
@@ -503,8 +524,8 @@ Wait for each artifact, then download. Run waits in parallel. Each artifact wait
 
 **Cover (download to /tmp first — needs special post-processing):**
 ```
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli artifact wait [ARTIFACT_COVER] -n [NB_COVER] --timeout 600
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli download infographic /tmp/cover-raw-[POST_NUMBER].png -a [ARTIFACT_COVER] -n [NB_COVER]
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli artifact wait [ARTIFACT_COVER] -n [NB_COVER] --timeout 600
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli download infographic /tmp/cover-raw-[POST_NUMBER].png -a [ARTIFACT_COVER] -n [NB_COVER]
 ```
 
 **QUALITY GATE — Cover (run immediately after cover download, before STEP 6c):**
@@ -519,8 +540,8 @@ If regeneration is needed, re-run the STEP 5a generate command against `[NB_COVE
 
 **Mid-article (download to /tmp first — needs special post-processing):**
 ```
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli artifact wait [ARTIFACT_MID] -n [NB_MID] --timeout 600
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli download infographic /tmp/mid-raw-[POST_NUMBER].png -a [ARTIFACT_MID] -n [NB_MID]
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli artifact wait [ARTIFACT_MID] -n [NB_MID] --timeout 600
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli download infographic /tmp/mid-raw-[POST_NUMBER].png -a [ARTIFACT_MID] -n [NB_MID]
 ```
 
 **QUALITY GATE — Mid (run immediately after mid download, before STEP 7a):**
@@ -533,14 +554,14 @@ If regeneration is needed, re-run the STEP 5b generate command against `[NB_MID]
 
 **Download/share portrait:**
 ```
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli artifact wait [ARTIFACT_DOWNLOAD] -n [NB_DOWNLOAD] --timeout 600
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli download infographic /Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/infographic/[POST_NUMBER]-[SHORT_NAME]-infographic-[DATE].png -a [ARTIFACT_DOWNLOAD] -n [NB_DOWNLOAD]
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli artifact wait [ARTIFACT_DOWNLOAD] -n [NB_DOWNLOAD] --timeout 600
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli download infographic {BASE_DIR}/posts/[POST_FOLDER]/infographic/[POST_NUMBER]-[SHORT_NAME]-infographic-[DATE].png -a [ARTIFACT_DOWNLOAD] -n [NB_DOWNLOAD]
 ```
 
 **Threads portrait (threads mode):**
 ```
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli artifact wait [ARTIFACT_THREADS] -n [NB_THREADS] --timeout 600
-/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli download infographic /Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/infographic/[POST_NUMBER]-[SHORT_NAME]-infographic-threads-[DATE].png -a [ARTIFACT_THREADS] -n [NB_THREADS]
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli artifact wait [ARTIFACT_THREADS] -n [NB_THREADS] --timeout 600
+{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli download infographic {BASE_DIR}/posts/[POST_FOLDER]/infographic/[POST_NUMBER]-[SHORT_NAME]-infographic-threads-[DATE].png -a [ARTIFACT_THREADS] -n [NB_THREADS]
 ```
 
 ---
@@ -962,7 +983,7 @@ def build_cover(portrait_path, output_path, title):
 
 build_cover(
     "/tmp/cover-raw-[POST_NUMBER].png",
-    "/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/infographic/[POST_NUMBER]-[SHORT_NAME]-infographic-cover-[DATE].png",
+    "{BASE_DIR}/posts/[POST_FOLDER]/infographic/[POST_NUMBER]-[SHORT_NAME]-infographic-cover-[DATE].png",
     "[NEWSLETTER TITLE]"
 )
 PYEOF
@@ -980,10 +1001,10 @@ Replace `[POST_NUMBER]`, `[POST_FOLDER]`, `[SHORT_NAME]`, `[DATE]`, and `[NEWSLE
 import oracledb, sys
 from pathlib import Path
 
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 today = "[DATE]"
-INFOG = Path("/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/infographic")
+INFOG = Path("{BASE_DIR}/posts/[POST_FOLDER]/infographic")
 
 cover_file = "[POST_NUMBER]-[SHORT_NAME]-infographic-cover-[DATE].png"
 mid_file   = "[POST_NUMBER]-[SHORT_NAME]-infographic-mid-[DATE].png"
@@ -1005,13 +1026,13 @@ On the first run, use INSERT. On a regeneration run (assets_images rows already 
 ```python
 import subprocess, json, os, sys
 from pathlib import Path
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 import oracledb
 
 ROOT = "1IMsrLBybekEcIkg2-BVw9_9udnDtQM48"
 post_folder = "[POST_FOLDER]"
-INFOG = Path("/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/infographic")
+INFOG = Path("{BASE_DIR}/posts/[POST_FOLDER]/infographic")
 
 files = [
     ([COVER_ID], str(INFOG / "[POST_NUMBER]-[SHORT_NAME]-infographic-cover-[DATE].png")),
@@ -1044,7 +1065,7 @@ print(f"Drive: infographic folder {folder_id}")
 
 Then refresh the registry:
 ```
-/opt/homebrew/bin/python3.12 /Users/kmalcolm/claude/iamkaymalcolm/assets/manage-assets.py export-md
+/opt/homebrew/bin/python3.12 {BASE_DIR}/assets/manage-assets.py export-md
 ```
 
 ---
@@ -1062,7 +1083,7 @@ post_folder = "[POST_FOLDER]"
 post_number = "[POST_NUMBER]"
 ROOT = "1IMsrLBybekEcIkg2-BVw9_9udnDtQM48"
 
-brief_files = sorted(Path(f"/Users/kmalcolm/claude/iamkaymalcolm/posts/{post_folder}").glob(f"{post_number}-*-brief-*.md"))
+brief_files = sorted(Path(f"{BASE_DIR}/posts/{post_folder}").glob(f"{post_number}-*-brief-*.md"))
 if not brief_files:
     print("No brief found for this post - skipping brief sync")
 else:
@@ -1099,7 +1120,7 @@ Tell the user:
 | Download/share portrait | `[POST_NUMBER]-[SHORT_NAME]-infographic-[DATE].png` | substack-newsletter, instagram |
 | Threads portrait | `[POST_NUMBER]-[SHORT_NAME]-infographic-threads-[DATE].png` | threads |
 
-All save to: `/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/infographic/`
+All save to: `{BASE_DIR}/posts/[POST_FOLDER]/infographic/`
 
 Create the `infographic/` subdirectory if it does not exist. Never save to a top-level infographic folder. Never save to content-drafts. Never save to the strategy folder.
 
@@ -1115,7 +1136,7 @@ Create the `infographic/` subdirectory if it does not exist. Never save to a top
 
 ## NotebookLM CLI Notes
 
-- Always use: `/opt/homebrew/bin/python3.12 -m notebooklm.notebooklm_cli`
+- Always use: `{NOTEBOOKLM_PYTHON} -m notebooklm.notebooklm_cli`
 - Never use the bare `notebooklm` command (runs on Python 3.9, will fail)
 - NotebookLM always outputs portrait regardless of instructions. Cover and mid have dedicated post-processing that handles the conversion — do not try to force landscape or square via the prompt.
 - Each infographic type has its own dedicated notebook. Notebook IDs are stored in `[POST_FOLDER]/infographic/.notebooks.json` and reused on every subsequent run for that post.

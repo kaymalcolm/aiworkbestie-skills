@@ -14,6 +14,23 @@ Generate the AI For You newsletter from a research file. Produces one shared new
 
 ---
 
+---
+
+## Platform Detection
+
+Before any file operations, detect the base directory:
+
+```bash
+python3 -c "import platform; print('/Users/kmalcolm/claude/iamkaymalcolm' if platform.system() == 'Darwin' else '/home/opc/iamkaymalcolm')"
+```
+
+- **Mac (Darwin):** `BASE_DIR = /Users/kmalcolm/claude/iamkaymalcolm`
+- **OCI (Linux):** `BASE_DIR = /home/opc/iamkaymalcolm`
+
+Use `BASE_DIR` for every file path in this skill.
+
+---
+
 ## Autonomy Rules
 
 Run the full workflow with no confirmation unless:
@@ -41,7 +58,7 @@ This skill creates the post record and registers the comment keyword before gene
 
 ### STEP 0 — Read the research file
 
-- If a post number is given, find the research file: glob `/Users/kmalcolm/claude/iamkaymalcolm/research/[POST_NUMBER]-*-research-*.md`
+- If a post number is given, find the research file: glob `{BASE_DIR}/research/[POST_NUMBER]-*-research-*.md`
 - If a path is given, read it directly
 - Extract from the research file:
   - `TOPIC`
@@ -58,10 +75,10 @@ Confirm the final slug in one line before proceeding: "Using slug `[SLUG]` — o
 
 ### STEP 0b — Read brand and strategy source files
 
-1. **Brand guide:** `/Users/kmalcolm/claude/iamkaymalcolm/strategy/iamkaymalcolm-brand-guide.md`
-2. **Content strategy:** `/Users/kmalcolm/claude/iamkaymalcolm/strategy/general-strategy.md`
-3. **Any content plan files** in `/Users/kmalcolm/claude/iamkaymalcolm/strategy/` that contain pain points or audience notes
-4. **Existing drafts** in `/Users/kmalcolm/claude/iamkaymalcolm/content-drafts/` — scan for topic overlap
+1. **Brand guide:** `{BASE_DIR}/strategy/iamkaymalcolm-brand-guide.md`
+2. **Content strategy:** `{BASE_DIR}/strategy/general-strategy.md`
+3. **Any content plan files** in `{BASE_DIR}/strategy/` that contain pain points or audience notes
+4. **Existing drafts** in `{BASE_DIR}/content-drafts/` — scan for topic overlap
 
 ---
 
@@ -81,7 +98,7 @@ Document this decision at the top of the output file as `POST_TYPE: TEASE` or `P
 **Query existing keywords:**
 ```python
 import sys
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 
 con = get_connection()
@@ -97,7 +114,7 @@ print("Used keywords:", used)
 **Create or verify the post record, then register:**
 ```python
 import datetime, sys
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 import oracledb
 
@@ -286,7 +303,7 @@ Do not save files until all sections pass.
 
 ### STEP 5 — Save the newsletter file
 
-Save to: `/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_NUMBER]-[SLUG]/[POST_NUMBER]-[SLUG]-newsletter-[YYYY-MM-DD].md`
+Save to: `{BASE_DIR}/posts/[POST_NUMBER]-[SLUG]/[POST_NUMBER]-[SLUG]-newsletter-[YYYY-MM-DD].md`
 
 Create the post folder if it doesn't exist.
 
@@ -362,7 +379,7 @@ Register the newsletter asset:
 
 ```python
 import oracledb, datetime, sys
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 
 today = datetime.date.today().isoformat()
@@ -416,7 +433,7 @@ Then sync captions to PostVault — write the newsletter content to `post_captio
 
 ```python
 import datetime, sys
-sys.path.insert(0, "/Users/kmalcolm/claude/iamkaymalcolm/assets")
+sys.path.insert(0, "{BASE_DIR}/assets")
 from oracle_db import get_connection
 
 con = get_connection()

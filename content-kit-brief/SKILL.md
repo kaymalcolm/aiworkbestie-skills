@@ -13,6 +13,23 @@ Generate a clean, actionable 1-page handoff document for the social media manage
 
 ---
 
+---
+
+## Platform Detection
+
+Before any file operations, detect the base directory:
+
+```bash
+python3 -c "import platform; print('/Users/kmalcolm/claude/iamkaymalcolm' if platform.system() == 'Darwin' else '/home/opc/iamkaymalcolm')"
+```
+
+- **Mac (Darwin):** `BASE_DIR = /Users/kmalcolm/claude/iamkaymalcolm`
+- **OCI (Linux):** `BASE_DIR = /home/opc/iamkaymalcolm`
+
+Use `BASE_DIR` for every file path in this skill.
+
+---
+
 ## Autonomy Rules
 
 Run the full workflow with no confirmation. Auto-detect the target file if no argument is given (use the most recently modified `content-kit-0*.md` in content-drafts). Save the brief and report the file path.
@@ -23,10 +40,10 @@ Run the full workflow with no confirmation. Auto-detect the target file if no ar
 
 ### STEP 0  -  Identify the target draft
 
-- If a post number or file path is given, find the post folder: `/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_NUMBER]-*/` and locate the draft file inside it by matching `[POST_NUMBER]-*-instagram-*.md` first. If that doesn't exist, fall back to any `[POST_NUMBER]-*.md` that is not a brief, script, or platform-specific file (twitter, threads, tiktok, youtube). Note the full post folder path as `POST_FOLDER` (e.g. `1031-where-to-start-with-ai`).
+- If a post number or file path is given, find the post folder: `{BASE_DIR}/posts/[POST_NUMBER]-*/` and locate the draft file inside it by matching `[POST_NUMBER]-*-instagram-*.md` first. If that doesn't exist, fall back to any `[POST_NUMBER]-*.md` that is not a brief, script, or platform-specific file (twitter, threads, tiktok, youtube). Note the full post folder path as `POST_FOLDER` (e.g. `1031-where-to-start-with-ai`).
 - If no argument, find the most recently modified draft across all post folders.
 - Read the full draft file.
-- Also read `/Users/kmalcolm/claude/iamkaymalcolm/strategy/general-strategy.md` for the b-roll shot bank and platform rules.
+- Also read `{BASE_DIR}/strategy/general-strategy.md` for the b-roll shot bank and platform rules.
 
 ---
 
@@ -45,7 +62,7 @@ From the draft file, pull:
 - Comment keyword and named-promise CTA (e.g., "Comment STACK and I'll DM you the exact 4-tool list")
 - Pinned comment text (if incomplete list close format)
 - Posting order
-- Infographic status: check whether infographic files exist in `/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/infographic/` (matching `[POST_NUMBER]-*-infographic-mid-*.png` and `[POST_NUMBER]-*-infographic-*.png`). Note which are done and which still need to be generated.
+- Infographic status: check whether infographic files exist in `{BASE_DIR}/posts/[POST_FOLDER]/infographic/` (matching `[POST_NUMBER]-*-infographic-mid-*.png` and `[POST_NUMBER]-*-infographic-*.png`). Note which are done and which still need to be generated.
 
 ---
 
@@ -217,7 +234,7 @@ Derive `SHORT_NAME` from the post folder slug (e.g. folder `1031-where-to-start-
    VALUES ('brief', 'content-kit', '[SHORT_NAME]-brief',
            'Production brief for post [POST_NUMBER]', 'draft',
            DATE '[TODAY]', DATE '[TODAY]', [POST_ID],
-           '/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/[POST_NUMBER]-[SHORT_NAME]-brief-[TODAY].md')
+           '{BASE_DIR}/posts/[POST_FOLDER]/[POST_NUMBER]-[SHORT_NAME]-brief-[TODAY].md')
 
 4. Call mcp__sqlcl__sql_run:
    SELECT id FROM assets
@@ -230,7 +247,7 @@ Build the canonical filename:
 `[POST_NUMBER]-[SHORT_NAME]-brief-[DATE].md`
 
 **3b — Save the brief to:**
-`/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_FOLDER]/[POST_NUMBER]-[SHORT_NAME]-brief-[DATE].md`
+`{BASE_DIR}/posts/[POST_FOLDER]/[POST_NUMBER]-[SHORT_NAME]-brief-[DATE].md`
 
 ---
 

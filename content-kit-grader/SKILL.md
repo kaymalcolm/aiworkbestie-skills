@@ -17,6 +17,23 @@ Evaluate any AI For You artifact against Kay Malcolm's brand standards, grade it
 
 ---
 
+---
+
+## Platform Detection
+
+Before any file operations, detect the base directory:
+
+```bash
+python3 -c "import platform; print('/Users/kmalcolm/claude/iamkaymalcolm' if platform.system() == 'Darwin' else '/home/opc/iamkaymalcolm')"
+```
+
+- **Mac (Darwin):** `BASE_DIR = /Users/kmalcolm/claude/iamkaymalcolm`
+- **OCI (Linux):** `BASE_DIR = /home/opc/iamkaymalcolm`
+
+Use `BASE_DIR` for every file path in this skill.
+
+---
+
 ## Autonomy Rules
 
 Run the full workflow with no confirmation. Read the artifact, grade it, then immediately rewrite any section that fails. Show the grade report first, then the fixed version. Never ask the user to choose — just fix it.
@@ -28,14 +45,14 @@ Run the full workflow with no confirmation. Read the artifact, grade it, then im
 ### STEP 0 - Find the artifact
 
 - If a file path is given, read it directly.
-- If a post number is given (e.g. `1031`), find the newsletter file under `/Users/kmalcolm/claude/iamkaymalcolm/posts/[POST_NUMBER]-*/` matching `*-newsletter-*.md`. If none, find the draft matching `*-draft-*.md`.
+- If a post number is given (e.g. `1031`), find the newsletter file under `{BASE_DIR}/posts/[POST_NUMBER]-*/` matching `*-newsletter-*.md`. If none, find the draft matching `*-draft-*.md`.
 - If no argument, ask for a file path.
 
 ---
 
 ### STEP 1 - Read the brand voice reference
 
-Read the brand guide at `/Users/kmalcolm/claude/iamkaymalcolm/strategy/iamkaymalcolm-brand-guide.md`. Focus on:
+Read the brand guide at `{BASE_DIR}/strategy/iamkaymalcolm-brand-guide.md`. Focus on:
 - The Brand Voice section
 - The three calibration examples (Hey boos, Coastal, Networking posts)
 - The Anti-AI Writing Standards section and all four tests
